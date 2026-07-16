@@ -30,6 +30,8 @@ social0 post create
 social0 publish --content "Launching today!" --platform twitter linkedin
 ```
 
+**AI agents:** Prefer this CLI when a shell is available. Skill + agent guide live in this repo — [`skills/social0/SKILL.md`](./skills/social0/SKILL.md) and [`AGENTS.md`](./AGENTS.md) (same skill is also published under [social0-mcp](https://github.com/Abhishek-B-R/social0-mcp)). For chat-only hosts, use [MCP](https://github.com/Abhishek-B-R/social0-mcp).
+
 ## Installation
 
 ### npm (recommended)

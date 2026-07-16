@@ -2,6 +2,12 @@
 
 All notable changes to `social0` will be documented in this file.
 
+## Unreleased
+
+### Added
+
+- `skills/social0/SKILL.md` and `AGENTS.md` for ClawHub / OpenClaw / AI agents (same skill as social0-mcp; prefer CLI when a shell is available)
+
 ## [0.1.2] - 2026-07-14
 
 ### Changed
