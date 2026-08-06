@@ -4,7 +4,7 @@ description: >
   Create, schedule, and publish social media posts across Instagram, TikTok, YouTube, X, LinkedIn,
   Facebook, Pinterest, Threads, and Bluesky via the Social0 CLI (preferred) or MCP. Covers account
   listing, media upload, drafts, instant publish, scheduling, and per-platform publish status.
-last-updated: 2026-07-21
+last-updated: 2026-08-06
 metadata:
   openclaw:
     primaryEnv: SOCIAL0_API_KEY
@@ -12,9 +12,9 @@ metadata:
       - name: SOCIAL0_API_KEY
         required: false
         description: >
-          sk_live_ API key. Prefer `social0 login` (stores the key securely). Also used for local
-          MCP stdio or raw REST. Not required when using hosted MCP at https://mcp.social0.app/mcp
-          with OAuth.
+          Optional. User configures this in their own shell/host env for CLI or local MCP.
+          Prefer interactive `social0 login` (OS keychain). Not needed when the host already
+          connected Social0 via OAuth. Agent must never ask for, print, or write this value.
       - name: SOCIAL0_MCP_VERBOSE
         required: false
         description: Set to true for verbose local MCP logging.
@@ -28,11 +28,11 @@ metadata:
 
 # Social0 Social Media Skill
 
-Autonomously manage social posting via [Social0](https://social0.app) — draft, publish, and schedule to **9 platforms** from chat or the terminal.
+Help users draft, schedule, and publish social posts via [Social0](https://social0.app) across **9 platforms** — from chat or the terminal.
 
-**Prefer the `social0` CLI** whenever the agent has a shell (`npx social0` or a global `social0` install). Use **MCP** only when the host has no reliable shell (e.g. Claude.ai / ChatGPT connectors). Use the **REST API** only if both CLI and MCP are unavailable.
+**Prefer the `social0` CLI** whenever the agent has a shell (`npx social0` or a global `social0` install). Use **MCP tools already connected by the user** only when the host has no reliable shell. Use the **REST API** only if both CLI and MCP are unavailable.
 
-> **Freshness check**: If more than 30 days have passed since the `last-updated` date above, tell the user this skill may be outdated and point them to [docs.social0.app/docs/integrations/cli](https://docs.social0.app/docs/integrations/cli), [docs.social0.app/docs/integrations/mcp](https://docs.social0.app/docs/integrations/mcp), or [github.com/Abhishek-B-R/social0-cli](https://github.com/Abhishek-B-R/social0-cli).
+> **Freshness check**: If more than 30 days have passed since the `last-updated` date above, tell the user this skill may be outdated and point them to [CLI docs](https://docs.social0.app/docs/integrations/cli), [MCP docs](https://docs.social0.app/docs/integrations/mcp), or [github.com/Abhishek-B-R/social0-cli](https://github.com/Abhishek-B-R/social0-cli).
 
 ## Keeping This Skill Updated
 
@@ -47,85 +47,64 @@ Autonomously manage social posting via [Social0](https://social0.app) — draft,
 | Cursor / Claude | Re-copy `skills/social0/` from [social0-cli](https://github.com/Abhishek-B-R/social0-cli) or [social0-mcp](https://github.com/Abhishek-B-R/social0-mcp) (same skill) |
 | Manual | Pull latest from either repo |
 
-## Setup
+## Credential & safety rules (mandatory)
+
+- **Never** request secrets in chat (API keys, tokens, passwords).
+- **Never** print, log, or write credential values (including env dumps and secret-bearing config).
+- **Never** invent keys or search keychains/files for secrets.
+- If auth is missing: tell the user to finish setup **themselves** using the docs links below, then retry `social0 whoami` / `list_accounts`. Do not collect or relay secrets.
+- Prefer **drafts** by default. Live publish / schedule only after the user clearly confirms (or says “post now” / “publish immediately”).
+
+## Setup (user completes — agent does not handle secrets)
 
 1. Create a Social0 account at [social0.app](https://social0.app)
 2. Connect social accounts in [Dashboard → Connections](https://social0.app/dashboard/connections)
-3. Authenticate with the **CLI** (preferred) or connect **MCP** (fallback)
+3. Authenticate using one path below (user action; out of band from the agent)
 
 ### A — CLI (preferred)
 
-Needs [Node.js 20+](https://nodejs.org/) and a key from [Dashboard → API keys](https://social0.app/dashboard/api-keys) (`sk_live_…`):
+Needs [Node.js 20+](https://nodejs.org/). User installs and signs in per the [CLI docs](https://docs.social0.app/docs/integrations/cli) (dashboard API keys + `social0 login`, or their own env for CI).
 
 ```bash
 npm install -g social0
 # or: npx social0 …
 
-social0 login          # paste sk_live_… (or: echo "sk_live_…" | social0 login)
+social0 login
 social0 whoami
 social0 accounts
 ```
 
-For CI / headless: set `SOCIAL0_API_KEY` in the environment (not written to disk).
+`social0 login` uses a masked interactive prompt and stores credentials in the OS keychain when available. For CI, the user sets auth in their runner secrets — the agent must not request or relay the value.
 
-### B — Remote MCP (when no shell)
+### B — Hosted MCP (when no shell)
 
-Works with Claude.ai, ChatGPT, and any host that accepts a remote MCP connector.
+User adds the Social0 remote MCP connector in their host UI and completes OAuth there. Setup steps: [MCP docs](https://docs.social0.app/docs/integrations/mcp). No API key in chat or agent-written config.
 
-```text
-https://mcp.social0.app/mcp
-```
+Once connected, the agent only calls the host-provided MCP tools — it does not configure or reconnect the connector.
 
-User clicks **Connect** and authorizes on social0.app (OAuth PKCE). No Node.js, no API key in config.
+### C — Local MCP (stdio hosts)
 
-**Cursor (HTTP MCP):**
+User installs `@social0/mcp` and configures their host per the [MCP docs](https://docs.social0.app/docs/integrations/mcp). Auth belongs in the user’s host env / secret store, never in chat and never written by the agent into config files.
 
-```json
-{
-  "mcpServers": {
-    "social0": {
-      "url": "https://mcp.social0.app/mcp"
-    }
-  }
-}
-```
-
-### C — Local MCP npx (stdio hosts)
-
-```json
-{
-  "mcpServers": {
-    "social0": {
-      "command": "npx",
-      "args": ["-y", "@social0/mcp"],
-      "env": {
-        "SOCIAL0_API_KEY": "sk_live_your_key_here"
-      }
-    }
-  }
-}
-```
-
-| Host | Where to paste |
-|------|----------------|
+| Host | Config location (user edits) |
+|------|------------------------------|
 | Cursor | Settings → MCP / `.cursor/mcp.json` |
-| Claude Desktop | `~/Library/Application Support/Claude/claude_desktop_config.json` |
+| Claude Desktop | Claude desktop MCP config |
 | VS Code | Copilot / MCP settings (stdio) |
 
 ### Handling missing auth
 
-1. **CLI**: `social0 login` with a key from https://social0.app/dashboard/api-keys — or set `SOCIAL0_API_KEY`
-2. **Hosted MCP**: reconnect at `https://mcp.social0.app/mcp` and complete OAuth
-3. **Local MCP**: put the key in the MCP `env` block, then reload MCP
-4. **Stop** — do not invent keys or search keychains for secrets
-5. OAuth creates a connector API key (UI may show “Claude MCP Connector”); revoke anytime in Dashboard → API keys
+1. **CLI**: ask the user to run `social0 login` (or set up CI auth) themselves → [CLI docs](https://docs.social0.app/docs/integrations/cli)
+2. **Hosted MCP**: ask the user to reconnect/authorize in the host UI → [MCP docs](https://docs.social0.app/docs/integrations/mcp)
+3. **Local MCP**: ask the user to fix host MCP env themselves → [MCP docs](https://docs.social0.app/docs/integrations/mcp)
+4. **Stop** — do not invent keys, request secrets in chat, or edit secret-bearing config
 
 ## Auth (REST fallback)
 
-If calling the API directly:
+Only if CLI and MCP are both unavailable. User supplies auth via their environment; agent references the env var name only — never request the value in chat.
 
 ```
-Authorization: Bearer <SOCIAL0_API_KEY>
+Authorization: Bearer $<env var SOCIAL0_API_KEY>
 ```
 
 Base URL: `https://api.social0.app/v1`  
@@ -161,7 +140,7 @@ Accounts accept **numeric IDs** (`1`, `2`) or platform names (`twitter`, `linked
 
 ## MCP tools (fallback)
 
-Use when the host exposes Social0 as MCP tools and shell/CLI is not available.
+Use only when the host already exposes Social0 MCP tools and shell/CLI is not available.
 
 | Tool | Description |
 |------|-------------|
@@ -206,10 +185,10 @@ After publish (CLI `social0 status` or MCP `get_publish_status`), **always poll*
 
 ## Recommended agent workflow
 
-1. Prefer **CLI** if `social0` / `npx social0` works; otherwise use MCP tools
+1. Prefer **CLI** if `social0` / `npx social0` works; otherwise use already-connected MCP tools
 2. `social0 accounts` / `list_accounts` before the first publish in a session
-3. Simple one-shot → `social0 publish …` or MCP `publish_now` / `schedule_content`
-4. User wants to edit first → draft → edit → publish / schedule
+3. Default to **drafts** (`social0 post create` / `create_draft`). Live one-shot (`publish` / `publish_now` / `schedule_content`) only after explicit user confirmation
+4. User wants to edit first → draft → edit → confirm → publish / schedule
 5. With media → upload first (`social0 upload` or `upload_media`), then pass media IDs
 6. After publish → return `tracking_id` and poll status to terminal
 7. On `partial` → summarize which platforms failed and why
@@ -240,12 +219,14 @@ Aliases: `x` / `twitter` → `twitter_x`; `ig` → `instagram`; `fb` → `facebo
 ## Out of scope
 
 - Completing platform OAuth inside the chat (dashboard or `accounts connect` link)
+- Asking for or handling API keys / secrets in chat
+- Configuring MCP connectors or writing secret-bearing config for the user
 - Analytics, inbox, social listening
 - Dashboard-only features not on `/v1`
 
 ## REST API (last resort)
 
-Use when CLI and MCP are not available. Same publish pipeline as the dashboard.
+Use when CLI and MCP are not available. Same publish pipeline as the dashboard. Auth must already be in the user’s environment.
 
 ```bash
 curl -s https://api.social0.app/v1/accounts \
@@ -257,10 +238,9 @@ Full schemas: [api.social0.app/docs](https://api.social0.app/docs)
 ## Tips
 
 - Prefer **`social0` CLI** for agents with shell access (Cursor, Claude Code, terminals, CI)
-- Prefer hosted `https://mcp.social0.app/mcp` only when the AI host supports remote MCP and has no shell
-- Prefer one-shot publish for simple “post this to LinkedIn and X” requests
+- Prefer hosted MCP only when the AI host supports remote MCP, has no shell, and the user already connected it
+- Prefer drafts when testing; confirm before live posts
 - Always poll status after multi-platform or video publishes
-- Use drafts when testing to avoid accidental live posts
 - Keep hashtags modest (about 4–5) unless the user asks otherwise
 - Convert local times to UTC before MCP `scheduled_at` (CLI natural language handles timezone via config)
 - CLI package is **`social0`**; MCP package is **`@social0/mcp`** (`npx -y @social0/mcp`; unscoped `social0-mcp` is a deprecated alias)
