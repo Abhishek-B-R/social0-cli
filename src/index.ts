@@ -126,8 +126,9 @@ const accountsCmd = program
   .description("Manage connected social accounts")
   .argument("[action]", "list, connect, or disconnect")
   .argument("[platform-or-id]", "Platform name or account ID")
-  .action(async (action, arg, _, cmd) => {
-    await accountsCommand(action, arg, globalOpts(cmd));
+  .option("-y, --yes", "Skip confirmation (disconnect)")
+  .action(async (action, arg, opts, cmd) => {
+    await accountsCommand(action, arg, { ...globalOpts(cmd), ...opts });
   });
 
 // Posts
@@ -165,6 +166,7 @@ postCmd
   .description("Edit a post")
   .option("-c, --content <text>", "New content")
   .option("-p, --platform <platforms...>", "Platforms or account IDs")
+  .option("-t, --time <when>", "Reschedule (natural language)")
   .action(async (id, opts, cmd) => {
     await postEditCommand(id, { ...globalOpts(cmd), ...opts });
   });
@@ -172,8 +174,9 @@ postCmd
 postCmd
   .command("delete <id>")
   .description("Delete a post")
-  .action(async (id, _, cmd) => {
-    await postDeleteCommand(id, globalOpts(cmd));
+  .option("-y, --yes", "Skip confirmation")
+  .action(async (id, opts, cmd) => {
+    await postDeleteCommand(id, { ...globalOpts(cmd), ...opts });
   });
 
 postCmd
@@ -190,6 +193,7 @@ program
   .option("-c, --content <text>", "Post content")
   .option("-p, --platform <platforms...>", "Platforms or account IDs")
   .option("-m, --media <ids...>", "Media IDs")
+  .option("-s, --schedule <time>", "Schedule instead of publishing now (natural language or ISO)")
   .action(async (target, opts, cmd) => {
     await publishCommand(target, { ...globalOpts(cmd), ...opts });
   });
@@ -229,6 +233,7 @@ const draftsCmd = program
   .argument("[action]", "list, delete, publish, or schedule")
   .argument("[id]", "Draft ID")
   .option("-t, --time <when>", "Schedule time")
+  .option("-y, --yes", "Skip confirmation (delete)")
   .action(async (action, id, opts, cmd) => {
     await draftsCommand(action, id, { ...globalOpts(cmd), ...opts });
   });
