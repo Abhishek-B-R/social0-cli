@@ -2,18 +2,21 @@
 
 All notable changes to `social0` will be documented in this file.
 
-## Unreleased
+## [0.3.0] - 2026-11-23
 
 ### Added
 
-- `skills/social0/SKILL.md` and `AGENTS.md` for ClawHub / OpenClaw / AI agents (same skill as social0-mcp; prefer CLI when a shell is available)
+- Team workspaces: `social0 workspaces [list|use|current]` and a global `--workspace <id>` flag (or `SOCIAL0_WORKSPACE_ID`). Without one, commands act on your personal accounts as before
+- `social0 post bulk-delete`, `duplicate`, `again`, `events`, `auto-plug`, `auto-repost`
+- `social0 webhooks [list|create|show|update|delete|deliveries|test]`
+- Natural-language schedule times (`--schedule "tomorrow 9am"`) and `-y` to skip delete confirmations
 
-## [0.2.0] - 2026-09-05
+ - 2026-09-04
 
 ### Added
 
-- `social0 analytics` — live metrics for posts published through Social0: `overview` (default, with `--range`, `--since`/`--until`, `--account`, `--fresh`), `accounts`, and `post <id>`
-- `social0 inbox` — comment threads and DMs from connected accounts: `comments` (default, with `--unanswered`, `--platform`, `--before` paging), `reply`, `like`, `unlike`, `hide`, `dms`, `dm <id>`, `dm-reply <id>`, and `accounts [--dms]`
+- `social0 analytics`: live metrics for posts published through Social0: `overview` (default, with `--range`, `--since`/`--until`, `--account`, `--fresh`), `accounts`, and `post <id>`
+- `social0 inbox`: comment threads and DMs from connected accounts: `comments` (default, with `--unanswered`, `--platform`, `--before` paging), `reply`, `like`, `unlike`, `hide`, `dms`, `dm <id>`, `dm-reply <id>`, and `accounts [--dms]`
 - Shell completions for the new `analytics` and `inbox` commands
 - `--account` accepts a numeric alias from `social0 accounts`, a platform name, or a UUID
 
